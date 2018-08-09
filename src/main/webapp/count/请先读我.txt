@@ -1,0 +1,53 @@
+相关AdminController代码逻辑有问题，例如在PurchaseListAdminController中，
+返回的每个购货单下的商品肯定是一样的。而且很没有必要去为前台封装好的PurchaseListGoods设置
+PurchaseList，因为前台传过来的仅仅是用于查询的而后面设置为null的那个属性，是为了防止循环引用
+的，在前台遍历的是PurchaseList，所以就把PurchaseListGoods的purchaseList属性设为了null。
+如果前台遍历的是PurchaseListGoods，那么就可以
+把PurchaseList的PurchaseListGoods属性置为null。
+
+
+
+
+
+
+
+
+
+
+
+SELECT SUM(t3.purchasing_price*t1.num) AS amountCost,SUM(t1.price*t1.num)
+AS amountSale,t2.`sale_date` AS saleDate FROM
+t_sale_list_goods t1 LEFT JOIN t_sale_list t2 ON t1.`sale_list_id`=t2.`id`
+LEFT JOIN t_goods t3 ON t3.`id`=t1.`goods_id`
+WHERE t2.`sale_date` BETWEEN ?1 AND ?2 GROUP BY t2.`sale_date`
+
+
+
+t1：销售单商品    t1.`sale_list_id`=t2.`id`   ：   销售单商品表的销售单ID等于销售单表的ID： 查售价、数量
+t2: 销售单：查日期
+t3: 商品表       t3.`id`=t1.`goods_id`		 ：	  商品表的ID等于销售单商品表的商品ID
+
+WHERE t2.`sale_date` BETWEEN ?1 AND ?2 GROUP BY t2.`sale_date`
+
+
+
+SELECT SUM(t3.purchasing_price*t1.num) AS amountCost,SUM(t1.price*t1.num)
+AS amountSale,DATE_FORMAT(t2.`sale_date`,'%Y-%m') AS saleDate FROM
+t_sale_list_goods t1 LEFT JOIN t_sale_list t2 ON
+t1.`sale_list_id`=t2.`id` LEFT JOIN t_goods t3 ON t3.`id`=t1.`goods_id`
+WHERE DATE_FORMAT(t2.`sale_date`,'%Y-%m')
+BETWEEN ?1 AND ?2 GROUP BY DATE_FORMAT(t2.`sale_date`,'%Y-%m')
+
+t1：销售单商品    t1.`sale_list_id`=t2.`id`   ：   销售单商品表的销售单ID等于销售单表的ID： 查售价、数量
+t2: 销售单：查日期
+t3: 商品表       t3.`id`=t1.`goods_id`		 ：	  商品表的ID等于销售单商品表的商品ID
+
+
+
+
+
+
+
+
+
+
